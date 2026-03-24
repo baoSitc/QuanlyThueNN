@@ -383,7 +383,7 @@ namespace QuanlyThue.Forms
             gridHoaDon.DataSource = MyFunction.GetDataTable(@"SELECT
     C.NGAYGIAODICH,
     SUM(C.SOTIENCO) AS SOTIENCO,
-    C.MADV,
+    LEFT(C.MADV,5) AS MADV,
     MAX(D.TENDV) AS TENDV,
 
     SUM(A.SUM_DNVHG) AS SUM_DNVHG,
@@ -450,7 +450,7 @@ OUTER APPLY
 
 GROUP BY
     C.NGAYGIAODICH,
-    C.MADV
+    C.MADV,SOTHAMCHIEU
 
 ORDER BY
     C.NGAYGIAODICH,
@@ -773,7 +773,7 @@ ORDER BY
     SELECT
         C.NGAYGIAODICH,
         SUM(C.SOTIENCO) AS SOTIENCO,
-        C.MADV,
+        LEFT(C.MADV,5) AS MADV,
         '' AS TenDV,
         SUM(SUM_DVP) AS SUM_DVP,
         SUM(SUM_DNVHG) AS SUM_DNVHG,
@@ -788,9 +788,10 @@ ORDER BY
         ISNULL(SUM(H.DVP),0) AS SUM_DVP,
 
         CASE 
-            WHEN MAX(H.Note) IS NULL OR MAX(H.Note)='' 
-            THEN N'DỊCH VỤ PHÍ THÁNG '+LEFT(MAX(H.LGTHANG),2)+'/'+RIGHT(MAX(H.LGTHANG),4)
-            ELSE MAX(H.Note)
+           WHEN MAX(RIGHT(H.SOHD,2)) IN ('KD','DV')
+                THEN MAX(H.Note)
+            ELSE
+            N'DỊCH VỤ PHÍ THÁNG '+LEFT(MAX(H.LGTHANG),2)+'/'+RIGHT(MAX(H.LGTHANG),4)            
         END AS GHICHU
 
     FROM CHOTSOLIEU H
@@ -799,7 +800,7 @@ ORDER BY
     AND H.SOHD IN (C.SOHD1,C.SOHD2,C.SOHD3,C.SOHD4,C.SOHD5,C.SOHD6,C.SOHD7)
 
 ) A
-    GROUP BY C.MADV,C.NGAYGIAODICH
+    GROUP BY C.MADV,C.NGAYGIAODICH,SOTHAMCHIEU
 	
 )
 
@@ -817,11 +818,11 @@ TenDV AS [Tên đối tượng],
 '007.1.00.4735213' AS [Nộp vào TK],
 N'Ngân hàng TMCP Ngoại thương Việt Nam' AS [Mở tại NH],
 N'34' AS [Lý do thu],
-N'THU LƯƠNG+PC,'+GHICHU AS [Diễn giải lý do thu],
+N'THU LƯƠNG+PC '+ REPLACE(GHICHU,N'DỊCH VỤ PHÍ','') AS [Diễn giải lý do thu],
 '' AS [Nhân viên thu],
 'VND' AS [Loại tiền],
 '' AS [Tỷ giá],
-GHICHU AS [Diễn giải],
+N'THU LƯƠNG+PC '+ REPLACE(GHICHU,N'DỊCH VỤ PHÍ','') AS [Diễn giải],
 '1121B' AS [TK Nợ (*)],
 '13885L' AS [TK Có (*)],
 SUM_DNVHG AS [Số tiền],
@@ -880,15 +881,21 @@ WHERE SUM_DVP > 0 ");
 
             if (gridViewHoaDon.RowCount > 0)
             {
-                SaveFileDialog saveFileDialogExcel = new SaveFileDialog();
-                saveFileDialogExcel.Filter = "Excel files (*.xlsx)|*.xlsx";
-                if (saveFileDialogExcel.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    string exportFilePath = saveFileDialogExcel.FileName;
-
-                    gridViewHoaDon.ExportToXlsx(exportFilePath);
-                    //gridViewHoaDon.ExportToXlsx();
-                    Process.Start(exportFilePath);
+                    SaveFileDialog saveFileDialogExcel = new SaveFileDialog();
+                    saveFileDialogExcel.Filter = "Excel files (*.xlsx)|*.xlsx";
+                    if (saveFileDialogExcel.ShowDialog() == DialogResult.OK)
+                    {
+                        string exportFilePath = saveFileDialogExcel.FileName;                      
+                        gridViewHoaDon.ExportToXlsx(exportFilePath);
+                        //gridViewHoaDon.ExportToXlsx();
+                        Process.Start(exportFilePath);
+                    }
+                }
+                catch (IOException)
+                {
+                    MessageBox.Show("File Excel đang mở. Vui lòng đóng file trước khi xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
             }
             else

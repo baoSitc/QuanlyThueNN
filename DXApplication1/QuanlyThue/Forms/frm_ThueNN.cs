@@ -95,7 +95,7 @@ namespace QuanlyThue.Forms
             _t_thuenn.MANV = searchTennhanvien.EditValue.ToString();
             _t_thuenn.HODEM = MyFunction.RunSQL_String("select hodem from q_hsc where manv='" + _t_thuenn.MANV + "'");
             _t_thuenn.TEN =_t_thuenn.HODEM+" "+  MyFunction.RunSQL_String("select ten from q_hsc where manv='" + _t_thuenn.MANV + "'");
-            _t_thuenn.LGTHANG = DateTime.Now.ToString("MM") + DateTime.Now.ToString("yyyy");
+           // _t_thuenn.LGTHANG = DateTime.Now.ToString("MM") + DateTime.Now.ToString("yyyy");
             _t_thuenn.DNVHG = double.Parse(txtDNVHG.Text, new CultureInfo("vi-VN"));
             //_t_thuenn.NGAYTIENVE = double.Parse(txt.Text);
             if (cmbKythue.Text == "Tháng")
@@ -119,7 +119,7 @@ namespace QuanlyThue.Forms
             _t_thuenn.PDV = double.Parse(txtPDV.Text.Replace(",", ""), new CultureInfo("vi-VN"));
             _t_thuenn.GT_BANTHAN = double.Parse(txtBT.Text.Replace(",", ""), new CultureInfo("vi-VN"));
             _t_thuenn.GT_PHUTHUOC = double.Parse(txtNPT.Text.Replace(",", ""), new CultureInfo("vi-VN"));
-           // _t_thuenn.LGTHANG = cmbThang.Text + cmbNam.Text;
+            _t_thuenn.LGTHANG = cmbThang.Text + cmbNam.Text;
             _t_thuenn.PHUCAP = double.Parse(txtPhucap.Text.Replace(",", ""), new CultureInfo("vi-VN"));
             _t_thuenn.THUONG = double.Parse(txtThuong.Text.Replace(",", ""), new CultureInfo("vi-VN"));
             _t_thuenn.TIENNHA = double.Parse(txtTiennha.Text.Replace(",", ""), new CultureInfo("vi-VN"));
@@ -524,6 +524,23 @@ namespace QuanlyThue.Forms
             else
                 chkALLnv .Text="Tất cả nhân viên";
             searchMadonvi_EditValueChanged(sender, e);
+        }
+
+        private void cmbKythue_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbKythue.Text == "Tháng")
+            {
+                cmbThang.Enabled = false;
+                cmbNam.Enabled = false;
+                cmbThang.Text = DateTime.Now.ToString("MM");
+                cmbNam.Text = DateTime.Now.ToString("yyyy");
+            }
+            else if (cmbKythue.Text == "Quý 1" || cmbKythue.Text == "Quý 2" || cmbKythue.Text == "Quý 3" || cmbKythue.Text == "Quý 4")
+            {
+                cmbThang.Enabled = true;
+                cmbNam.Enabled = true;
+
+            }
         }
     }
 }

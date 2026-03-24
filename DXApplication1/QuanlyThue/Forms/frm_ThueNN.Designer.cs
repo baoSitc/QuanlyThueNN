@@ -719,6 +719,7 @@ namespace QuanlyThue.Forms
             this.cmbKythue.Size = new System.Drawing.Size(80, 21);
             this.cmbKythue.TabIndex = 18;
             this.cmbKythue.Text = "Tháng";
+            this.cmbKythue.SelectedIndexChanged += new System.EventHandler(this.cmbKythue_SelectedIndexChanged);
             // 
             // label18
             // 
@@ -1027,6 +1028,7 @@ namespace QuanlyThue.Forms
             // cmbThang
             // 
             this.cmbThang.Dock = System.Windows.Forms.DockStyle.Right;
+            this.cmbThang.Enabled = false;
             this.cmbThang.FormattingEnabled = true;
             this.cmbThang.Items.AddRange(new object[] {
             "01",
@@ -1085,6 +1087,7 @@ namespace QuanlyThue.Forms
             // 
             // cmbNam
             // 
+            this.cmbNam.Enabled = false;
             this.cmbNam.FormattingEnabled = true;
             this.cmbNam.Items.AddRange(new object[] {
             "2026",
