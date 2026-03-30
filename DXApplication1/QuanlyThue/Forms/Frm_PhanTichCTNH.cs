@@ -45,8 +45,8 @@ namespace QuanlyThue.Forms
             try
             {
                 //thiết lập lại từ ngày và đến ngày về mặc định
-                    txtTuNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                    txtDenNgay.Value = DateTime.Now;
+                txtTuNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                txtDenNgay.Value = DateTime.Now;
 
                 using (OpenFileDialog ofd = new OpenFileDialog() { Filter = "Excel Workbook|*.xlsx|Excel Workbook 97-2003|*.xls", ValidateNames = true })
                 {
@@ -74,7 +74,7 @@ namespace QuanlyThue.Forms
 
                             dt = ds.Tables[0];
 
-                           
+
                             reader.Close();
                             //xóa dữ liệu cũ
                             MyFunction.RunSQL("delete from CTNH");
@@ -193,7 +193,7 @@ namespace QuanlyThue.Forms
             DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
             if (tuNgay > denNgay)
             {
-                MessageBox.Show("Từ ngày phải nhỏ hơn hoặc bằng Đến ngày","Thông báo",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show("Từ ngày phải nhỏ hơn hoặc bằng Đến ngày", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             //thiết lập con trỏ chuột dạng chờ
@@ -277,8 +277,8 @@ namespace QuanlyThue.Forms
             if (gridViewCTNH.FocusedRowHandle < 0) return;
             gridHoaDon.DataSource = null;
             //xóa dữ liệu cũ
-            gridViewHoaDon .Columns.Clear();     // QUAN TRỌNG
-            gridViewHoaDon .RefreshData();       // QUAN TRỌNG
+            gridViewHoaDon.Columns.Clear();     // QUAN TRỌNG
+            gridViewHoaDon.RefreshData();       // QUAN TRỌNG
 
             string madv = gridViewCTNH.GetFocusedRowCellValue("MADV")?.ToString();
             string sohd1 = gridViewCTNH.GetFocusedRowCellValue("SOHD1")?.ToString();
@@ -327,7 +327,7 @@ namespace QuanlyThue.Forms
         private void SetupGridChotSoLieuColumns()
         {
             var view = gridViewHoaDon;
-           
+
 
             view.OptionsView.ShowFooter = true;
             view.OptionsView.ColumnAutoWidth = false;
@@ -335,7 +335,7 @@ namespace QuanlyThue.Forms
             view.BestFitColumns();
 
             // SOHD
-           MyFunction. SetCol(view, "SOHD", "Số HĐ", 150, HorzAlignment.Center);
+            MyFunction.SetCol(view, "SOHD", "Số HĐ", 150, HorzAlignment.Center);
 
             // DVP - Tiền phải trả
             MyFunction.SetMoneyCol(view, "DVP", "Dịch vụ phí", 120);
@@ -346,7 +346,7 @@ namespace QuanlyThue.Forms
             MyFunction.SetMoneyCol(view, "TONGBH", "Tổng BH", 120);
 
             // TONGTHUE
-             MyFunction.SetMoneyCol(view, "TONGTHUE", "Tổng thuế", 120);
+            MyFunction.SetMoneyCol(view, "TONGTHUE", "Tổng thuế", 120);
 
             // NGAYIN
             MyFunction.SetDateCol(view, "NGAYIN", "Ngày in", 100);
@@ -361,10 +361,10 @@ namespace QuanlyThue.Forms
 
             // Ẩn các cột không cần
             MyFunction.HideCol(view, "ID");
-            MyFunction.HideCol(view, "DV");            
+            MyFunction.HideCol(view, "DV");
             MyFunction.HideCol(view, "Ghichu");
         }
-        
+
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
@@ -395,9 +395,7 @@ namespace QuanlyThue.Forms
 
     SUM(A.SUM_DVP) AS SUM_DVP,
 
-    SUM(C.SOTIENCO) 
-        - SUM(A.SUM_DNVHG) 
-        - SUM(A.SUM_DVP) AS THUA,
+    SUM((CASE WHEN C.STTEMP>0 THEN C.STTEMP ELSE 0 END)) AS THUA,
 
     MAX(A.GHICHU) AS GHICHU
 FROM CTNH C
@@ -443,7 +441,7 @@ OUTER APPLY
 
     JOIN CHOTSOLIEU H
         ON H.SOHD = X.SOHD
-        AND H.DV = C.MADV
+        AND LEFT(H.DV,5) = LEFT(C.MADV,5)
         AND H.TINHTRANG = 1
 
 ) A
@@ -454,7 +452,7 @@ GROUP BY
 
 ORDER BY
     C.NGAYGIAODICH,
-    SOTIENCO ");       
+    SOTIENCO ");
 
             //thiết lập các Col            
 
@@ -472,7 +470,7 @@ ORDER BY
             MyFunction.SetMoneyCol(view, "SUM_DVP", "PHI DV", 150);
             MyFunction.SetCol(view, "GHICHU", "GHICHU", 200);
 
-           // MyFunction.HideCol(view, "SUM_TONGTIENDN");
+            // MyFunction.HideCol(view, "SUM_TONGTIENDN");
             //Ẩn các cột không cần thiết
 
         }
@@ -515,7 +513,7 @@ ORDER BY
         private void cmdSave_Click(object sender, EventArgs e)
         {
             //tự động chốt  tiền về
-            string sql= @"UPDATE H
+            string sql = @"UPDATE H
                 SET 
                     H.chottienve = 1,
                     H.ngaychottienve = GETDATE(),
@@ -527,7 +525,7 @@ ORDER BY
                     AND H.TINHTRANG = 1 AND H.CHOTTIENVE=0
                 WHERE C.stTemp = 0";
             var prms = new List<SqlParameter>();
-            prms.Add(new SqlParameter("@user", MyFunction._UserName+ "- Auto")); // user đang đăng nhập
+            prms.Add(new SqlParameter("@user", MyFunction._UserName + "- Auto")); // user đang đăng nhập
             MyFunction.RunSQL(sql, prms.ToArray());
             //thông báo chốt tiền thành công
             MessageBox.Show("Chốt tiền về thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -556,149 +554,160 @@ ORDER BY
         {
             //export excel
             //gọi hàm phân tích tiền về theo CTNH trước
-             toolStripButton1_Click(sender, e);
+            toolStripButton1_Click(sender, e);
             if (gridViewHoaDon.RowCount > 0)
             {
                 SaveFileDialog saveFileDialogExcel = new SaveFileDialog();
                 saveFileDialogExcel.Filter = "Excel files (*.xlsx)|*.xlsx";
-                if (saveFileDialogExcel.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    string exportFilePath = saveFileDialogExcel.FileName;
-                    PrintingSystem ps = new PrintingSystem();
-                    PrintableComponentLink link = new PrintableComponentLink(ps);
-
-                    //float pageWidth = gridViewHoaDon.ViewRect.Width;
-                    // QUAN TRỌNG khi export
-                    gridViewHoaDon.AppearancePrint.Row.Font = new System.Drawing.Font("Times New Roman", 10);
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
-                    gridViewHoaDon.AppearancePrint.FooterPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
-
-                    //warp text trong ô
-                    gridViewHoaDon.AppearancePrint.Row.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-                    gridViewHoaDon.AppearancePrint.FooterPanel.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
-                    //tăng chiều cao cho HeaderPanel
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
-
-
-                    gridViewHoaDon.AppearancePrint.Row.Options.UseTextOptions = true;
-
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
-                    gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseTextOptions = true;
-                    gridViewHoaDon.AppearancePrint.Row.Options.UseFont = true;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseFont = true;
-                    gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseFont = true;
-                    gridViewHoaDon.AppearancePrint.Row.Options.UseBackColor = true;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseBackColor = true;
-                    gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseBackColor = true;
-                    gridViewHoaDon.AppearancePrint.Row.BackColor = Color.White;
-                    gridViewHoaDon.AppearancePrint.HeaderPanel.BackColor = Color.LightGray;
-                    gridViewHoaDon.AppearancePrint.FooterPanel.BackColor = Color.LightGray;
-
-
-
-
-                    gridViewHoaDon.OptionsPrint.AutoWidth = true;                   
-
-                    link.Component = gridHoaDon;                   
-
-                    // 👉 Thêm tiêu đề phía trên
-                    link.CreateMarginalHeaderArea += (s, eArgs2) =>
+                    if (saveFileDialogExcel.ShowDialog() == DialogResult.OK)
                     {
-                        float pageWidth = eArgs2.Graph.ClientPageSize.Width;
-                        string title = "BẢNG PHÂN TÍCH CHỨNG TỪ NGÂN HÀNG (VND)";
-                        string dateRange = $"Từ ngày: {txtTuNgay.Value:dd/MM/yyyy} đến ngày: {txtDenNgay.Value:dd/MM/yyyy}";
+                        string exportFilePath = saveFileDialogExcel.FileName;
+                        PrintingSystem ps = new PrintingSystem();
+                        PrintableComponentLink link = new PrintableComponentLink(ps);
 
-                        // 3. Thiết lập Font và Căn lề (Căn giữa tiêu đề)
-                        eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 14, FontStyle.Bold);
-                        eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Center);
+                        //float pageWidth = gridViewHoaDon.ViewRect.Width;
+                        // QUAN TRỌNG khi export
+                        gridViewHoaDon.AppearancePrint.Row.Font = new System.Drawing.Font("Times New Roman", 10);
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
+                        gridViewHoaDon.AppearancePrint.FooterPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
 
-                        // Vẽ tiêu đề (Dòng 1)
-                        eArgs2.Graph.DrawString(title, Color.Black, new RectangleF(0, 0, pageWidth, 30), DevExpress.XtraPrinting.BorderSide.None);
-
-
-                       // eArgs2.Graph.DrawString(title, new RectangleF(0, 0, eArgs2.Graph.ClientPageSize.Width, 30));
-                        eArgs2.Graph.DrawString(dateRange,Color.Black,  new RectangleF(0, 30, pageWidth, 20), DevExpress.XtraPrinting.BorderSide.None);
-                    };
-                    link.CreateReportFooterArea += (s, eArgs2) =>
-                    {
-                        // bỏ màu nền xám
-                        eArgs2.Graph.BackColor = Color.White;
-
-                        float pageWidth = eArgs2.Graph.ClientPageSize.Width;
-
-                        // ===== Ngày xuất báo cáo (góc phải) =====
-                        string exportTime = "Ngày " + DateTime.Now.ToString("dd") +
-                                            " Tháng " + DateTime.Now.ToString("MM") +
-                                            " Năm " + DateTime.Now.ToString("yyyy");
-
-                        eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Italic);
-                        eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Far);
-
-                        eArgs2.Graph.DrawString(exportTime, Color.Black,
-                            new RectangleF(0, 10, pageWidth-30 , 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                       
-                        // ===== Khu vực chữ ký =====
-                        float colWidth = pageWidth / 3;
-
-                        eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Center);
-                        eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
-
-                        eArgs2.Graph.DrawString("P.TCKT", Color.Black,
-                            new RectangleF(0, 30, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                        eArgs2.Graph.DrawString("Người lập bảng", Color.Black,
-                            new RectangleF(colWidth, 30, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                        eArgs2.Graph.DrawString("P.Giám đốc TTCULD", Color.Black,
-                            new RectangleF(colWidth * 2, 30, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                        // dòng ghi chú ký
-                        eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 9, FontStyle.Italic);
-
-                        eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
-                            new RectangleF(0, 50, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                        eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
-                            new RectangleF(colWidth, 50, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-
-                        eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
-                            new RectangleF(colWidth * 2, 50, colWidth, 20),
-                            DevExpress.XtraPrinting.BorderSide.None);
-                    };                                      
-
-                    link.PaperKind = System.Drawing.Printing.PaperKind.A3;
-                    link.Landscape = true;
-                    link.Margins = new System.Drawing.Printing.Margins(50, 50, 80, 80);
+                        //warp text trong ô
+                        gridViewHoaDon.AppearancePrint.Row.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+                        gridViewHoaDon.AppearancePrint.FooterPanel.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
+                        //tăng chiều cao cho HeaderPanel
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.TextOptions.VAlignment = DevExpress.Utils.VertAlignment.Center;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
 
 
-                    gridViewHoaDon.BestFitColumns();
+                        gridViewHoaDon.AppearancePrint.Row.Options.UseTextOptions = true;
 
-                    link.CreateDocument();
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseTextOptions = true;
+                        gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseTextOptions = true;
+                        gridViewHoaDon.AppearancePrint.Row.Options.UseFont = true;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseFont = true;
+                        gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseFont = true;
+                        gridViewHoaDon.AppearancePrint.Row.Options.UseBackColor = true;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.Options.UseBackColor = true;
+                        gridViewHoaDon.AppearancePrint.FooterPanel.Options.UseBackColor = true;
+                        gridViewHoaDon.AppearancePrint.Row.BackColor = Color.White;
+                        gridViewHoaDon.AppearancePrint.HeaderPanel.BackColor = Color.LightGray;
+                        gridViewHoaDon.AppearancePrint.FooterPanel.BackColor = Color.LightGray;
 
-                    XlsxExportOptionsEx opt = new XlsxExportOptionsEx();
-                    
-                    opt.ExportType = DevExpress.Export.ExportType.WYSIWYG;
-                    opt.TextExportMode = DevExpress.XtraPrinting.TextExportMode.Value;
 
-                    link.ExportToXlsx(exportFilePath, opt);
 
-                    //gridViewHoaDon.ExportToXlsx();
-                    Process.Start(exportFilePath);
+
+                        gridViewHoaDon.OptionsPrint.AutoWidth = true;
+
+                        link.Component = gridHoaDon;
+
+                        // 👉 Thêm tiêu đề phía trên
+                        link.CreateMarginalHeaderArea += (s, eArgs2) =>
+                        {
+                            float pageWidth = eArgs2.Graph.ClientPageSize.Width;
+                            string title = "BẢNG PHÂN TÍCH CHỨNG TỪ NGÂN HÀNG (VND)";
+                            string dateRange = $"Từ ngày: {txtTuNgay.Value:dd/MM/yyyy} đến ngày: {txtDenNgay.Value:dd/MM/yyyy}";
+
+                            // 3. Thiết lập Font và Căn lề (Căn giữa tiêu đề)
+                            eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 14, FontStyle.Bold);
+                            eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Center);
+
+                            // Vẽ tiêu đề (Dòng 1)
+                            eArgs2.Graph.DrawString(title, Color.Black, new RectangleF(0, 0, pageWidth, 30), DevExpress.XtraPrinting.BorderSide.None);
+
+
+                            // eArgs2.Graph.DrawString(title, new RectangleF(0, 0, eArgs2.Graph.ClientPageSize.Width, 30));
+                            eArgs2.Graph.DrawString(dateRange, Color.Black, new RectangleF(0, 30, pageWidth, 20), DevExpress.XtraPrinting.BorderSide.None);
+                        };
+                        link.CreateReportFooterArea += (s, eArgs2) =>
+                        {
+                            // bỏ màu nền xám
+                            eArgs2.Graph.BackColor = Color.White;
+
+                            float pageWidth = eArgs2.Graph.ClientPageSize.Width;
+
+                            // ===== Ngày xuất báo cáo (góc phải) =====
+                            string exportTime = "Ngày " + DateTime.Now.ToString("dd") +
+                                                " Tháng " + DateTime.Now.ToString("MM") +
+                                                " Năm " + DateTime.Now.ToString("yyyy");
+
+                            eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Italic);
+                            eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Far);
+
+                            eArgs2.Graph.DrawString(exportTime, Color.Black,
+                                new RectangleF(0, 10, pageWidth - 30, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+
+                            // ===== Khu vực chữ ký =====
+                            float colWidth = pageWidth / 3;
+
+                            eArgs2.Graph.StringFormat = new DevExpress.XtraPrinting.BrickStringFormat(StringAlignment.Center);
+                            eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
+
+                            eArgs2.Graph.DrawString("P.TCKT", Color.Black,
+                                new RectangleF(0, 30, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+                            eArgs2.Graph.DrawString("Người lập bảng", Color.Black,
+                                new RectangleF(colWidth, 30, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+                            eArgs2.Graph.DrawString("P.Giám đốc TTCULD", Color.Black,
+                                new RectangleF(colWidth * 2, 30, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+                            // dòng ghi chú ký
+                            eArgs2.Graph.Font = new System.Drawing.Font("Times New Roman", 9, FontStyle.Italic);
+
+                            eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
+                                new RectangleF(0, 50, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+                            eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
+                                new RectangleF(colWidth, 50, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+
+                            eArgs2.Graph.DrawString("(Ký, ghi rõ họ tên)", Color.Black,
+                                new RectangleF(colWidth * 2, 50, colWidth, 20),
+                                DevExpress.XtraPrinting.BorderSide.None);
+                        };
+
+                        link.PaperKind = System.Drawing.Printing.PaperKind.A3;
+                        link.Landscape = true;
+                        link.Margins = new System.Drawing.Printing.Margins(50, 50, 80, 80);
+
+
+                        gridViewHoaDon.BestFitColumns();
+
+                        link.CreateDocument();
+
+                        XlsxExportOptionsEx opt = new XlsxExportOptionsEx();
+
+                        opt.ExportType = DevExpress.Export.ExportType.WYSIWYG;
+                        opt.TextExportMode = DevExpress.XtraPrinting.TextExportMode.Value;
+                        //KIEM TRA XEM FILE ĐANG MỞ HAY KHÔNG TRƯỚC KHI EXPORT
+
+
+                        link.ExportToXlsx(exportFilePath, opt);
+
+                        //gridViewHoaDon.ExportToXlsx();
+                        Process.Start(exportFilePath);
+                    }
+
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                }
+
             }
             else
                 MessageBox.Show("Không có dữ liệu", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
         }
 
         private void Options_CustomizeSheetHeader(ContextEventArgs e)
@@ -773,6 +782,7 @@ ORDER BY
     SELECT
         C.NGAYGIAODICH,
         SUM(C.SOTIENCO) AS SOTIENCO,
+        SUM(C.STTEMP) AS STTEMP,
         LEFT(C.MADV,5) AS MADV,
         '' AS TenDV,
         SUM(SUM_DVP) AS SUM_DVP,
@@ -795,7 +805,7 @@ ORDER BY
         END AS GHICHU
 
     FROM CHOTSOLIEU H
-    WHERE H.DV = C.MADV
+    WHERE LEFT(H.DV,5) = LEFT(C.MADV,5)
     AND H.TINHTRANG = 1
     AND H.SOHD IN (C.SOHD1,C.SOHD2,C.SOHD3,C.SOHD4,C.SOHD5,C.SOHD6,C.SOHD7)
 
@@ -877,7 +887,44 @@ MADV ,
 ''
 
 FROM A
-WHERE SUM_DVP > 0 ");           
+WHERE SUM_DVP > 0 
+UNION ALL
+
+------------------------------------------------
+-- DÒNG STTEMP (THỪA CHƯA PHÂN TÍCH)
+------------------------------------------------
+SELECT
+'' ,
+NGAYGIAODICH ,
+NGAYGIAODICH ,
+SOTHAMCHIEU ,
+MADV ,
+TenDV ,
+'CULD' ,
+'007.1.00.4735213' ,
+N'Ngân hàng TMCP Ngoại thương Việt Nam' ,
+N'34' ,
+N'THỪA CHƯA PHÂN TÍCH' ,
+'' ,
+'VND' ,
+'' ,
+N'THỪA CHƯA PHÂN TÍCH' AS [Diễn giải],   -- yêu cầu của bạn
+'1121B' ,
+'33886' ,  -- bạn có thể đổi TK này nếu cần
+STTEMP ,
+STTEMP ,
+MADV ,
+'' ,
+'' ,
+'' ,
+'' ,
+'' ,
+'' ,
+'' ,
+''
+
+FROM A
+WHERE STTEMP > 0");
 
             if (gridViewHoaDon.RowCount > 0)
             {
@@ -887,7 +934,7 @@ WHERE SUM_DVP > 0 ");
                     saveFileDialogExcel.Filter = "Excel files (*.xlsx)|*.xlsx";
                     if (saveFileDialogExcel.ShowDialog() == DialogResult.OK)
                     {
-                        string exportFilePath = saveFileDialogExcel.FileName;                      
+                        string exportFilePath = saveFileDialogExcel.FileName;
                         gridViewHoaDon.ExportToXlsx(exportFilePath);
                         //gridViewHoaDon.ExportToXlsx();
                         Process.Start(exportFilePath);
@@ -906,4 +953,4 @@ WHERE SUM_DVP > 0 ");
 
 
 
-    }
+}
