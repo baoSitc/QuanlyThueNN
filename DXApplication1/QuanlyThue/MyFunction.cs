@@ -96,6 +96,27 @@ namespace QuanlyThue
             { MessageBox.Show(ex.ToString()); }
             return dt;
         }
+        public static DataTable GetDataTable(string str, SqlParameter[] prms)
+        {
+            DataTable dt = new DataTable();
+            cmm.CommandType = CommandType.Text;
+            try
+            {
+                cmm.Parameters.Clear();
+
+                if (prms != null)
+                    cmm.Parameters.AddRange(prms);
+                cmm.CommandText = str;
+                cmm.Connection = con;
+                da.SelectCommand = cmm;
+                da.Fill(dt);
+                // Disconnect();
+
+            }
+            catch (Exception ex)
+            { MessageBox.Show(ex.ToString()); }
+            return dt;
+        }
         public static void RunSQL(string str)
         {
 

@@ -33,13 +33,14 @@
             this.cmdExit = new System.Windows.Forms.ToolStripButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.radioDoiTenHoaDon = new System.Windows.Forms.RadioButton();
             this.radioOp4 = new System.Windows.Forms.RadioButton();
             this.cmdThuchien = new DevExpress.XtraEditors.SimpleButton();
             this.txtChuoi = new System.Windows.Forms.TextBox();
             this.radioOp3 = new System.Windows.Forms.RadioButton();
             this.radioOp2 = new System.Windows.Forms.RadioButton();
             this.radioOp1 = new System.Windows.Forms.RadioButton();
-            this.radioDoiTenHoaDon = new System.Windows.Forms.RadioButton();
+            this.button1 = new System.Windows.Forms.Button();
             this.toolStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -78,6 +79,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.radioDoiTenHoaDon);
             this.panel1.Controls.Add(this.radioOp4);
             this.panel1.Controls.Add(this.cmdThuchien);
@@ -90,6 +92,19 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(440, 230);
             this.panel1.TabIndex = 0;
+            this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // radioDoiTenHoaDon
+            // 
+            this.radioDoiTenHoaDon.AutoSize = true;
+            this.radioDoiTenHoaDon.ForeColor = System.Drawing.Color.Blue;
+            this.radioDoiTenHoaDon.Location = new System.Drawing.Point(9, 122);
+            this.radioDoiTenHoaDon.Name = "radioDoiTenHoaDon";
+            this.radioDoiTenHoaDon.Size = new System.Drawing.Size(170, 17);
+            this.radioDoiTenHoaDon.TabIndex = 6;
+            this.radioDoiTenHoaDon.TabStop = true;
+            this.radioDoiTenHoaDon.Text = "Đổi tên File Hóa đơn hàng loạt";
+            this.radioDoiTenHoaDon.UseVisualStyleBackColor = true;
             // 
             // radioOp4
             // 
@@ -154,17 +169,17 @@
             this.radioOp1.UseVisualStyleBackColor = true;
             this.radioOp1.CheckedChanged += new System.EventHandler(this.radioOp1_CheckedChanged);
             // 
-            // radioDoiTenHoaDon
+            // button1
             // 
-            this.radioDoiTenHoaDon.AutoSize = true;
-            this.radioDoiTenHoaDon.ForeColor = System.Drawing.Color.Blue;
-            this.radioDoiTenHoaDon.Location = new System.Drawing.Point(9, 122);
-            this.radioDoiTenHoaDon.Name = "radioDoiTenHoaDon";
-            this.radioDoiTenHoaDon.Size = new System.Drawing.Size(170, 17);
-            this.radioDoiTenHoaDon.TabIndex = 6;
-            this.radioDoiTenHoaDon.TabStop = true;
-            this.radioDoiTenHoaDon.Text = "Đổi tên File Hóa đơn hàng loạt";
-            this.radioDoiTenHoaDon.UseVisualStyleBackColor = true;
+            this.button1.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.Color.Blue;
+            this.button1.Location = new System.Drawing.Point(80, 160);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(187, 37);
+            this.button1.TabIndex = 7;
+            this.button1.Text = "Join PDF";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // frm_Tienich
             // 
@@ -198,5 +213,6 @@
         private DevExpress.XtraEditors.SimpleButton cmdThuchien;
         private System.Windows.Forms.RadioButton radioOp4;
         private System.Windows.Forms.RadioButton radioDoiTenHoaDon;
+        private System.Windows.Forms.Button button1;
     }
 }

@@ -25,6 +25,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static DevExpress.Xpo.Helpers.AssociatedCollectionCriteriaHelper;
 using LicenseContext = OfficeOpenXml.LicenseContext;
 
 namespace QuanlyThue.Forms
@@ -73,11 +74,9 @@ namespace QuanlyThue.Forms
                             });
 
                             dt = ds.Tables[0];
-
-
                             reader.Close();
                             //xóa dữ liệu cũ
-                            MyFunction.RunSQL("delete from CTNH");
+                            //MyFunction.RunSQL("delete from CTNH WHERE KHONGXOA IS NULL");
                             //Dùng dữ liệu từ DataSet để thêm mới công nợ
                             using (SqlConnection conn = new SqlConnection(MyFunction.str_con))
                             {
@@ -94,10 +93,11 @@ namespace QuanlyThue.Forms
 
                                     using (SqlCommand cmd = new SqlCommand(@"
             INSERT INTO CTNH
-            (NGAYGIAODICH,SOTHAMCHIEU,SOTIENCO,MOTA,STTEMP)
-            VALUES
-            (@NGAYGIAODICH, @SOTHAMCHIEU, @SOTIENCO, @MOTA,@SOTIENCO)
-        ", conn))
+            (NGAYGIAODICH,SOTHAMCHIEU,SOTIENCO,MOTA,STTEMP,KHONGXOA)
+            SELECT
+            @NGAYGIAODICH, @SOTHAMCHIEU, @SOTIENCO, @MOTA,@SOTIENCO,@KHONGXOA
+        WHERE NOT EXISTS (
+        SELECT 1 FROM CTNH WHERE ISNULL(SOTHAMCHIEU,'') = ISNULL(@SOTHAMCHIEU,''))", conn))
                                     {
                                         if (row["NGAYGIAODICH"] != DBNull.Value)
                                         {
@@ -114,11 +114,7 @@ namespace QuanlyThue.Forms
                                         cmd.Parameters.AddWithValue("@SOTHAMCHIEU", row["SOTHAMCHIEU"]?.ToString());
                                         cmd.Parameters.AddWithValue("@SOTIENCO", row["SOTIENCO"]?.ToString());
                                         cmd.Parameters.AddWithValue("@MOTA", row["MOTA"]?.ToString());
-
-                                        //cmd.Parameters.AddWithValue("@DATRA",
-                                        //    double.TryParse(row["DATRA"]?.ToString(), out double daTra) ? daTra : 0);
-                                        //cmd.Parameters.AddWithValue("@CONLAI",
-                                        //    double.TryParse(row["CONLAI"]?.ToString(), out double conLai) ? conLai : 0);
+                                        cmd.Parameters.AddWithValue("@KHONGXOA", 0);                                      
 
                                         cmd.ExecuteNonQuery();
 
@@ -133,9 +129,10 @@ namespace QuanlyThue.Forms
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
-                MessageBox.Show(ex.ToString());
+
+                MessageBox.Show("Lỗi SQL: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -144,8 +141,14 @@ namespace QuanlyThue.Forms
             //thiết lập lại từ ngày và đến ngày về mặc định
             txtTuNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             txtDenNgay.Value = DateTime.Now;
+            //tHỰC HIỆN MAP MÃ ĐƠN VỊ TỰ ĐỘNG
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
 
-            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH ORDER BY MADV");
+            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH WHERE NGAYGIAODICH >=@TuNgay and ngaygiaodich <= @DenNgay ORDER BY MADV",prms.ToArray());
         }
 
         private void gridViewCTNH_CustomDrawRowIndicator(object sender, DevExpress.XtraGrid.Views.Grid.RowIndicatorCustomDrawEventArgs e)
@@ -189,8 +192,14 @@ namespace QuanlyThue.Forms
 
         private void cmdDel_Click(object sender, EventArgs e)
         {
+            //tHỰC HIỆN MAP MÃ ĐƠN VỊ TỰ ĐỘNG
             DateTime tuNgay = txtTuNgay.Value.Date;
             DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
+
+
             if (tuNgay > denNgay)
             {
                 MessageBox.Show("Từ ngày phải nhỏ hơn hoặc bằng Đến ngày", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -229,7 +238,7 @@ namespace QuanlyThue.Forms
 
             MessageBox.Show("Cập nhật mã đơn vị thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             //load lại dữ liệu
-            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
+            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH WHERE NGAYGIAODICH>=@TuNgay and ngaygiaodich <@DenNgay",prms.ToArray());
             //refresh lại gridview
             gridCTNH.Refresh();
         }
@@ -252,18 +261,8 @@ namespace QuanlyThue.Forms
 
         private void cmdEdit_Click(object sender, EventArgs e)
         {
-            //Tìm số hóa đơn.
-            //thiết lập con trỏ chuột dạng chờ
-            this.Cursor = Cursors.WaitCursor;
-
-            MyFunction.RunSQL("sp_AutoMap_SOHD_CTNH;");
-
-
-            this.Cursor = Cursors.Default;
-            //Thông báo cập nhật thành công
-            MessageBox.Show("Cập nhật số hóa đơn thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //load lại dữ liệu
-            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
+            //XÓA CTNH
+            XoavaLoadCTNH();
 
         }
 
@@ -368,7 +367,7 @@ namespace QuanlyThue.Forms
 
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            //Phân tích tiền về theo CTNH
+             //Phân tích tiền về theo CTNH
             gridHoaDon.DataSource = null;
             var view = gridViewHoaDon;
             view.Columns.Clear();     // QUAN TRỌNG
@@ -378,6 +377,13 @@ namespace QuanlyThue.Forms
             view.OptionsView.ShowAutoFilterRow = true;
             view.BestFitColumns();
             groupPanel2.Text = "Phân tích chứng từ ngân hàng";
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
+           
+
 
             //load dữ liệu phân tích CTNH
             gridHoaDon.DataSource = MyFunction.GetDataTable(@"SELECT
@@ -386,7 +392,14 @@ namespace QuanlyThue.Forms
     LEFT(C.MADV,5) AS MADV,
     MAX(D.TENDV) AS TENDV,
 
-    SUM(A.SUM_DNVHG) AS SUM_DNVHG,
+    -- 🔥 nếu có trả hộ → tính khác
+    SUM(
+        CASE 
+            WHEN E.IsTraHo = 1 THEN A.SUM_DNVHG
+            ELSE A.SUM_DNVHG
+        END
+    ) AS SUM_DNVHG,
+
     0 AS SUM_TONGBH,
     0 AS SUM_BHTN,
     0 AS SUM_CDP,
@@ -395,12 +408,40 @@ namespace QuanlyThue.Forms
 
     SUM(A.SUM_DVP) AS SUM_DVP,
 
-    SUM((CASE WHEN C.STTEMP>0 THEN C.STTEMP ELSE 0 END)) AS THUA,
+    SUM(CASE WHEN C.STTEMP > 0 THEN C.STTEMP ELSE 0 END) AS THUA,
+    '' as PHILOAIK,'' AS MANN,'' AS LUONGNN,'' AS THUENN,'' AS DVPNN,  
 
     MAX(A.GHICHU) AS GHICHU
+
 FROM CTNH C
+
 LEFT JOIN Q_DMDV D
-ON C.MADV = D.MADV
+    ON C.MADV = D.MADV
+
+-- 🔥 xác định có phải dòng ""trả hộ""
+CROSS APPLY
+(
+    SELECT 
+        CASE 
+            WHEN EXISTS
+            (
+                SELECT 1
+                FROM (VALUES
+                    (C.SOHD1),
+                    (C.SOHD2),
+                    (C.SOHD3),
+                    (C.SOHD4),
+                    (C.SOHD5),
+                    (C.SOHD6),
+                    (C.SOHD7)
+                ) V(SOHD)
+                WHERE LEN(SOHD) > 5
+                AND LEFT(SOHD,5) <> LEFT(C.MADV,5)
+            )
+            THEN 1 ELSE 0
+        END AS IsTraHo
+) E
+
 OUTER APPLY
 (
     SELECT
@@ -408,7 +449,8 @@ OUTER APPLY
         SUM(H.DVP) AS SUM_DVP,
 
         CASE
-            WHEN MAX(RIGHT(H.SOHD,2)) IN ('KD','DV')
+            WHEN (MAX(RIGHT(H.SOHD,2)) IN ('KD','DV')) 
+                 OR (MAX(H.SOHD) LIKE '%PDV%')
                 THEN MAX(H.Note)
 
             WHEN MIN(H.LGTHANG) = MAX(H.LGTHANG)
@@ -436,23 +478,28 @@ OUTER APPLY
             (C.SOHD6),
             (C.SOHD7)
         ) V(SOHD)
-        WHERE SOHD IS NOT NULL
+        WHERE LEN(SOHD) > 5
     ) X
 
     JOIN CHOTSOLIEU H
-        ON H.SOHD = X.SOHD
-        AND LEFT(H.DV,5) = LEFT(C.MADV,5)
+        ON H.SOHD = X.SOHD   -- 🔥 CHỈ JOIN THEO SOHD
         AND H.TINHTRANG = 1
 
 ) A
 
+WHERE 
+    C.NGAYGIAODICH >= @TuNgay
+    AND C.NGAYGIAODICH <@DenNgay
+
 GROUP BY
     C.NGAYGIAODICH,
-    C.MADV,SOTHAMCHIEU
+    C.MADV,
+    SOTHAMCHIEU
 
 ORDER BY
     C.NGAYGIAODICH,
-    SOTIENCO ");
+    SOTIENCO
+ ", prms.ToArray());
 
             //thiết lập các Col            
 
@@ -468,6 +515,11 @@ ORDER BY
             MyFunction.SetMoneyCol(view, "THUA", "THUA", 100);
             MyFunction.SetMoneyCol(view, "SUM_THUENN", "THUE NN/DV K/GPLD", 100);
             MyFunction.SetMoneyCol(view, "SUM_DVP", "PHI DV", 150);
+            MyFunction.SetCol(view, "PHILOAIK", "PHÍ LOẠI K", 100);
+            MyFunction.SetCol(view, "MANN", "MÃ NN", 100);
+            MyFunction.SetCol(view, "LUONGNN", "LƯƠNG NN", 100);
+            MyFunction.SetCol(view, "THUENN", "THUẾ NN", 100);
+            MyFunction.SetCol(view, "DVPNN", "DVP NN", 100);
             MyFunction.SetCol(view, "GHICHU", "GHICHU", 200);
 
             // MyFunction.HideCol(view, "SUM_TONGTIENDN");
@@ -530,11 +582,17 @@ ORDER BY
             //thông báo chốt tiền thành công
             MessageBox.Show("Chốt tiền về thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-
         }
 
         private void gridViewCTNH_DoubleClick(object sender, EventArgs e)
         {
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
+
+
             var view = sender as GridView;
             if (view.FocusedRowHandle < 0) return;
 
@@ -546,7 +604,7 @@ ORDER BY
             if (frm.ShowDialog() == DialogResult.OK)
             {
                 //load lại form
-                gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH ORDER BY MADV");
+                gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH WHERE NGAYGIAODICH>=@TuNgay and NGAYGIAODICH<@DenNgay ORDER BY MADV",prms.ToArray());
             }
         }
 
@@ -569,7 +627,7 @@ ORDER BY
 
                         //float pageWidth = gridViewHoaDon.ViewRect.Width;
                         // QUAN TRỌNG khi export
-                        gridViewHoaDon.AppearancePrint.Row.Font = new System.Drawing.Font("Times New Roman", 10);
+                        gridViewHoaDon.AppearancePrint.Row.Font = new System.Drawing.Font("Times New Roman", 13);
                         gridViewHoaDon.AppearancePrint.HeaderPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
                         gridViewHoaDon.AppearancePrint.FooterPanel.Font = new System.Drawing.Font("Times New Roman", 13, FontStyle.Bold);
 
@@ -722,22 +780,36 @@ ORDER BY
 
         private void txtTuNgay_ValueChanged(object sender, EventArgs e)
         {
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
+
             if (txtTuNgay.IsEmpty || txtDenNgay.IsEmpty)
             {
                 MessageBox.Show("Vui lòng chọn đầy đủ Từ ngày và Đến ngày", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            XoavaLoadCTNH();
+
+            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH WHERE NGAYGIAODICH >=@TuNgay and NGAYGIAODICH<=@DenNgay", prms.ToArray());
         }
 
         private void txtDenNgay_ValueChanged(object sender, EventArgs e)
         {
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
+
             if (txtTuNgay.IsEmpty || txtDenNgay.IsEmpty)
             {
                 MessageBox.Show("Vui lòng chọn đầy đủ Từ ngày và Đến ngày", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            XoavaLoadCTNH();
+
+            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH WHERE NGAYGIAODICH >=@TuNgay and NGAYGIAODICH<=@DenNgay", prms.ToArray());
         }
         void XoavaLoadCTNH()
         {
@@ -749,15 +821,20 @@ ORDER BY
                 return;
             }
             //Xóa ngày CTNH
-            string sql = @"DELETE FROM CTNH
-               WHERE NGAYGIAODICH < @TuNgay 
-               OR NGAYGIAODICH > @DenNgay";
-            var prms = new List<SqlParameter>();
-            prms.Add(new SqlParameter("@TuNgay", tuNgay));
-            prms.Add(new SqlParameter("@DenNgay", denNgay));
-            MyFunction.RunSQL(sql, prms.ToArray());
-            //load lại dữ liệu
-            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
+            //hỏi nguoi dùng có chắc chắn muốn xóa không
+            if (MessageBox.Show("Bạn có chắc chắn muốn xóa dữ liệu từ ngày " + tuNgay.ToString("dd/MM/yyyy") + " đến ngày " + denNgay.ToString("dd/MM/yyyy") + " không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                string sql = @"DELETE FROM CTNH
+               WHERE NGAYGIAODICH >= @TuNgay 
+               AND NGAYGIAODICH <= @DenNgay";
+                var prms = new List<SqlParameter>();
+                prms.Add(new SqlParameter("@TuNgay", tuNgay));
+                prms.Add(new SqlParameter("@DenNgay", denNgay));
+                MyFunction.RunSQL(sql, prms.ToArray());
+                //load lại dữ liệu
+                gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
+            }
+
 
         }
 
@@ -765,6 +842,11 @@ ORDER BY
         {
             //export Misa
             //Phân tích tiền về theo CTNH
+            DateTime tuNgay = txtTuNgay.Value.Date;
+            DateTime denNgay = txtDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+            var prms = new List<SqlParameter>();
+            prms.Add(new SqlParameter("@TuNgay", tuNgay));
+            prms.Add(new SqlParameter("@DenNgay", denNgay));
             gridHoaDon.DataSource = null;
             var view = gridViewHoaDon;
             view.Columns.Clear();     // QUAN TRỌNG
@@ -776,42 +858,70 @@ ORDER BY
             groupPanel2.Text = "Export Misa";
 
             //load dữ liệu phân tích CTNH
-            gridHoaDon.DataSource = MyFunction.GetDataTable(@" WITH A AS
+            gridHoaDon.DataSource = MyFunction.GetDataTable(@"WITH A AS
 (
-    -- QUERY GỐC CỦA BẠN
     SELECT
         C.NGAYGIAODICH,
-        SUM(C.SOTIENCO) AS SOTIENCO,
-        SUM(C.STTEMP) AS STTEMP,
-        LEFT(C.MADV,5) AS MADV,
+        C.SOTHAMCHIEU,
+
+        -- 🔥 dùng đơn vị con nếu có
+        --X.MADV_CON AS MADV,
+        C.MADV,
+
         '' AS TenDV,
-        SUM(SUM_DVP) AS SUM_DVP,
-        SUM(SUM_DNVHG) AS SUM_DNVHG,
-        MAX(A.GHICHU) AS GHICHU,
-        MAX(SOTHAMCHIEU) AS SOTHAMCHIEU
-    FROM CTNH C
-    LEFT JOIN Q_DMDV D ON C.MADV = D.MADV
-   OUTER APPLY
-(
-    SELECT
-        ISNULL(SUM(H.DNVHG),0) AS SUM_DNVHG,
-        ISNULL(SUM(H.DVP),0) AS SUM_DVP,
+
+        SUM(X.DNVHG) AS SUM_DNVHG,
+        SUM(X.DVP) AS SUM_DVP,
+
+        SUM(CASE WHEN C.STTEMP > 0 THEN C.STTEMP ELSE 0 END) AS STTEMP,
 
         CASE 
-           WHEN MAX(RIGHT(H.SOHD,2)) IN ('KD','DV')
-                THEN MAX(H.Note)
+            WHEN MAX(RIGHT(X.SOHD,2)) IN ('KD','DV') 
+                 OR MAX(X.SOHD) LIKE '%PDV%'
+                THEN MAX(X.Note)
             ELSE
-            N'DỊCH VỤ PHÍ THÁNG '+LEFT(MAX(H.LGTHANG),2)+'/'+RIGHT(MAX(H.LGTHANG),4)            
+                N'DỊCH VỤ PHÍ THÁNG '
+                + LEFT(MAX(X.LGTHANG),2) + '/'
+                + RIGHT(MAX(X.LGTHANG),4)
         END AS GHICHU
 
-    FROM CHOTSOLIEU H
-    WHERE LEFT(H.DV,5) = LEFT(C.MADV,5)
-    AND H.TINHTRANG = 1
-    AND H.SOHD IN (C.SOHD1,C.SOHD2,C.SOHD3,C.SOHD4,C.SOHD5,C.SOHD6,C.SOHD7)
+    FROM CTNH C
 
-) A
-    GROUP BY C.MADV,C.NGAYGIAODICH,SOTHAMCHIEU
-	
+    CROSS APPLY
+    (
+        SELECT 
+            H.SOHD,
+            LEFT(H.DV,5) AS MADV_CON,
+            H.DNVHG,
+            H.DVP,
+            H.LGTHANG,
+            H.Note
+        FROM (VALUES
+            (C.SOHD1),
+            (C.SOHD2),
+            (C.SOHD3),
+            (C.SOHD4),
+            (C.SOHD5),
+            (C.SOHD6),
+            (C.SOHD7)
+        ) V(SOHD)
+        JOIN CHOTSOLIEU H
+            ON H.SOHD = V.SOHD
+            AND H.TINHTRANG = 1
+        WHERE LEN(V.SOHD) > 5
+    ) X
+
+    LEFT JOIN Q_DMDV D 
+        ON D.MADV = X.MADV_CON   -- 🔥 lấy tên đơn vị con
+
+    WHERE 
+        C.NGAYGIAODICH >= @TuNgay
+        AND C.NGAYGIAODICH < @DenNgay
+
+    GROUP BY
+        C.NGAYGIAODICH,
+        C.SOTHAMCHIEU,
+        C.MADV
 )
 
 ------------------------------------------------
@@ -822,7 +932,7 @@ SELECT
 NGAYGIAODICH AS [Ngày hạch toán (*)],
 NGAYGIAODICH AS [Ngày chứng từ (*)],
 SOTHAMCHIEU AS [Số chứng từ (*)],
-MADV AS [Mã đối tượng],
+LEFT(MADV,5) AS [Mã đối tượng],
 TenDV AS [Tên đối tượng],
 'CULD' AS [Địa chỉ],
 '007.1.00.4735213' AS [Nộp vào TK],
@@ -837,7 +947,7 @@ N'THU LƯƠNG+PC '+ REPLACE(GHICHU,N'DỊCH VỤ PHÍ','') AS [Diễn giải],
 '13885L' AS [TK Có (*)],
 SUM_DNVHG AS [Số tiền],
 SUM_DNVHG AS [Số tiền quy đổi],
-MADV AS [Đối tượng],
+LEFT(MADV,5) AS [Đối tượng],
 '' AS [Khoản mục CP],
 '' AS [Đơn vị],
 '' AS [Đối tượng THCP],
@@ -861,7 +971,7 @@ SELECT
 NGAYGIAODICH ,
 NGAYGIAODICH ,
 SOTHAMCHIEU ,
-MADV ,
+LEFT(MADV,5) ,
 TenDV ,
 'CULD' AS [Địa chỉ],
 '007.1.00.4735213' AS [Nộp vào TK],
@@ -898,7 +1008,7 @@ SELECT
 NGAYGIAODICH ,
 NGAYGIAODICH ,
 SOTHAMCHIEU ,
-MADV ,
+LEFT(MADV,5) ,
 TenDV ,
 'CULD' ,
 '007.1.00.4735213' ,
@@ -924,7 +1034,9 @@ MADV ,
 ''
 
 FROM A
-WHERE STTEMP > 0");
+WHERE STTEMP > 0
+
+", prms.ToArray());
 
             if (gridViewHoaDon.RowCount > 0)
             {
@@ -947,6 +1059,11 @@ WHERE STTEMP > 0");
             }
             else
                 MessageBox.Show("Không có dữ liệu", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
 
         }
     }

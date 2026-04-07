@@ -1,4 +1,8 @@
 ﻿using DevExpress.XtraEditors;
+using ExcelDataReader;
+using iText.Kernel.Pdf;
+using iText.Kernel.Utils;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,7 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ExcelDataReader;
+using static DevExpress.XtraPrinting.Native.ExportOptionsPropertiesNames;
 
 namespace QuanlyThue.Forms
 {
@@ -25,7 +29,7 @@ namespace QuanlyThue.Forms
         {
             this.Close();
         }
-        private void RenameFilesToUpperCase(string folderPath,String _chuoi,int _opt)
+        private void RenameFilesToUpperCase(string folderPath, String _chuoi, int _opt)
         {
             if (!Directory.Exists(folderPath))
             {
@@ -57,7 +61,7 @@ namespace QuanlyThue.Forms
                                     .ToUpper();
                 newName = Regex.Replace(newName, @"_+", "_");
 
-               
+
 
 
                 string newFileName = newName + extension.ToUpper(); // nếu muốn giữ đuôi thường thì bỏ ToUpper()
@@ -98,7 +102,7 @@ namespace QuanlyThue.Forms
 
 
                 MessageBox.Show("Bạn chọn file Excel chứa tên tập tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                using (OpenFileDialog ofd = new OpenFileDialog() { Filter = "Excel Workbook|*.xlsx|Excel Workbook 97-2003|*.xls", ValidateNames = true })
+                using (System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog() { Filter = "Excel Workbook|*.xlsx|Excel Workbook 97-2003|*.xls", ValidateNames = true })
                 {
                     if (ofd.ShowDialog() == DialogResult.OK)
                     {
@@ -128,7 +132,7 @@ namespace QuanlyThue.Forms
                             if (dt.Columns[0].ColumnName != "STT" || dt.Columns[1].ColumnName != "TENFILE")
 
                             {
-                                MessageBox.Show("Định dạng file excel không đúng, vui lòng kiểm tra lại tên cột Excel theo thứ tự sau:\n1)STT; 2)TENFILE","Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Định dạng file excel không đúng, vui lòng kiểm tra lại tên cột Excel theo thứ tự sau:\n1)STT; 2)TENFILE", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
                             }
                             else
@@ -142,9 +146,9 @@ namespace QuanlyThue.Forms
 
                                         if (MessageBox.Show("Bạn có chắc chắn thực hiện đổi tên file?", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                                         {
-                                            for(int i = 0; i < dt.Rows.Count; i++)
+                                            for (int i = 0; i < dt.Rows.Count; i++)
                                             {
-                                               int vitri= dt.Rows[i][1].ToString().IndexOf("_");
+                                                int vitri = dt.Rows[i][1].ToString().IndexOf("_");
                                                 DoiFileHoaDon(fbd.SelectedPath, dt.Rows[i][1].ToString().Substring(0, vitri), dt.Rows[i][1].ToString());
                                             }
 
@@ -212,7 +216,7 @@ namespace QuanlyThue.Forms
                     }
                 }
             }
-            else if (radioOp4.Checked) 
+            else if (radioOp4.Checked)
             {
                 using (FolderBrowserDialog fbd = new FolderBrowserDialog())
                 {
@@ -221,7 +225,7 @@ namespace QuanlyThue.Forms
 
                         if (MessageBox.Show("Bạn có chắc chắn thực hiện đổi tên file?", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            DataTable dt= new DataTable();
+                            DataTable dt = new DataTable();
                             dt = MyFunction.GetDataTable("select * from Appointments");
                             foreach (DataRow dr in dt.Rows)
                             {
@@ -229,13 +233,14 @@ namespace QuanlyThue.Forms
                                 {
                                     timfile(fbd.SelectedPath, dr[17].ToString(), dr[19].ToString(), dr[15].ToString(), dr[16].ToString(), dr[0].ToString());
                                 }
-                                else {
+                                else
+                                {
                                     timfile(fbd.SelectedPath, dr[17].ToString(), dr[19].ToString(), "", dr[16].ToString(), dr[0].ToString());
                                 }
-                                
+
                             }
                             MessageBox.Show("Da hoan thanh");
-                            
+
                         }
                     }
                 }
@@ -244,12 +249,12 @@ namespace QuanlyThue.Forms
             else if (radioDoiTenHoaDon.Checked)
             {
                 //Doi tên hàng loạt file Hóa Đơn
-               DoiTenFileHoaDon();
+                DoiTenFileHoaDon();
 
-                
+
             }
         }
-        void timfile(string _folder, string _keyword1, string _keyword2, string _keyword3,string _tenfile,string _id)
+        void timfile(string _folder, string _keyword1, string _keyword2, string _keyword3, string _tenfile, string _id)
         {
             //string folderPath = @"C:\YourFolderPath"; // Thay đổi đường dẫn theo ý bạn
             //string keyword1 = "ABC"; // Ký tự đầu cần tìm
@@ -270,29 +275,29 @@ namespace QuanlyThue.Forms
                     string _newfile = "";
 
 
-                        try
-                        {
+                    try
+                    {
                         if (_keyword3 == "N")
                         {
 
-                             _newfile = "E:\\HopDong\\" + _keyword2 + "NN_" + _tenfile + ".PDF";
+                            _newfile = "E:\\HopDong\\" + _keyword2 + "NN_" + _tenfile + ".PDF";
                         }
                         else
                         {
-                             _newfile = "E:\\HopDong\\" + _keyword2 + "_" + _tenfile + ".PDF";
+                            _newfile = "E:\\HopDong\\" + _keyword2 + "_" + _tenfile + ".PDF";
                         }
-                            File.Copy(file , _newfile);
+                        File.Copy(file, _newfile);
                         MyFunction.RunSQL("update Appointments set type='1' where UniqueID='" + _id + "'");
 
-                        }
-                        catch (Exception ex)
-                        {
+                    }
+                    catch (Exception ex)
+                    {
                         MyFunction.RunSQL("update Appointments set type='0' where UniqueID='" + _id + "'");
                         // MessageBox.Show($"Lỗi đổi tên file {file}: {ex.Message}");
                     }
-                    
 
-                   // MessageBox.Show("Ten file:" + file);
+
+                    // MessageBox.Show("Ten file:" + file);
                 }
 
                 if (!matchingFiles.Any())
@@ -319,7 +324,8 @@ namespace QuanlyThue.Forms
                     return fileName.Contains(_keyword1.ToLower());
                 }).FirstOrDefault();
 
-                if (matchingFiles != null) {
+                if (matchingFiles != null)
+                {
                     try
                     {
                         string _newfile = _folder + "\\" + _tenfile + ".pdf";
@@ -330,17 +336,89 @@ namespace QuanlyThue.Forms
                     }
                     catch (Exception ex)
                     {
-                        
+
                     }
                 }
 
-                else {
+                else
+                {
                     MessageBox.Show("Không tìm thấy file nào bắt đầu bằng '" + _tenfile + "'");
                 }
-                 
-                }
 
-                
+            }
+
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //join pdf
+            //LẤY FOLDER CHỨA CÁC FILE PDF CẦN GHÉP
+            MessageBox.Show("Chọn folder gốc chứa các file PDF cần ghép", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            string rootPath="";
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    //if (MessageBox.Show("Chọn folder gốc chứa các file PDF cần ghép", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    rootPath = fbd.SelectedPath;
+
+                }
+                else return; 
+
+            }
+
+            //string rootPath = @"D:\JOINPDF";
+            string outputPath = Path.Combine(rootPath, "KETQUA");
+
+            // tạo folder Ketqua nếu chưa có
+            if (!Directory.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+
+            // lấy danh sách folder con
+            var subFolders = Directory.GetDirectories(rootPath);
+
+            foreach (var folder in subFolders)
+            {
+                string folderName = Path.GetFileName(folder);
+
+                // bỏ qua folder Ketqua
+                if (folderName.ToLower() == "ketqua") continue;
+
+                var pdfFiles = Directory.GetFiles(folder, "*.pdf")
+                                        .OrderBy(f => f) // sắp xếp tên file
+                                        .ToList();
+
+                if (pdfFiles.Count == 0) continue;
+
+                string outputFile = Path.Combine(outputPath, folderName + ".pdf");
+
+                using (PdfWriter writer = new PdfWriter(outputFile))
+                using (PdfDocument pdfDest = new PdfDocument(writer))
+                {
+                    PdfMerger merger = new PdfMerger(pdfDest);
+
+                    foreach (var file in pdfFiles)
+                    {
+                        using (PdfDocument pdfSrc = new PdfDocument(new PdfReader(file)))
+                        {
+                            merger.Merge(pdfSrc, 1, pdfSrc.GetNumberOfPages());
+                        }
+                    }
+                }
+            }
+
+            MessageBox.Show("Đã ghép xong tất cả các file PDF!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //MỞ FOLDER KETQUA
+            System.Diagnostics.Process.Start("explorer.exe", outputPath);
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

@@ -119,11 +119,11 @@
             // cmdEdit
             // 
             this.cmdEdit.Font = new System.Drawing.Font("Times New Roman", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cmdEdit.Image = ((System.Drawing.Image)(resources.GetObject("cmdEdit.Image")));
+            this.cmdEdit.Image = global::QuanlyThue.Properties.Resources._329;
             this.cmdEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.cmdEdit.Name = "cmdEdit";
-            this.cmdEdit.Size = new System.Drawing.Size(109, 22);
-            this.cmdEdit.Text = "Tìm số hóa đơn";
+            this.cmdEdit.Size = new System.Drawing.Size(144, 22);
+            this.cmdEdit.Text = "Xóa dữ liệu theo ngày";
             this.cmdEdit.Click += new System.EventHandler(this.cmdEdit_Click);
             // 
             // cmdSave
@@ -222,6 +222,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1510, 30);
             this.tableLayoutPanel1.TabIndex = 1;
+            this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
             // 
             // txtTuNgay
             // 
