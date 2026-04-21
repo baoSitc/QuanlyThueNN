@@ -1,10 +1,16 @@
-﻿using DevExpress.XtraReports.UI;
+﻿using DevExpress.Utils.MVVM.Services;
+using DevExpress.XtraExport.Helpers;
+using DevExpress.XtraReports.UI;
+using DevExpress.XtraRichEdit.Import.Html;
+using iText.Signatures.Validation.Report;
 using QuanlyThue.Forms;
 using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Xml.Linq;
+using static DevExpress.DataProcessing.InMemoryDataProcessor.AddSurrogateOperationAlgorithm;
 
 namespace QuanlyThue.Report
 {
@@ -29,8 +35,15 @@ namespace QuanlyThue.Report
 
                 txt_chuky.Text = MyFunction.RunSQL_String("select ten_option from tbl_option where ma_option='CK_VN_B'").ToUpper();
                 txt_kyten.Text = MyFunction.RunSQL_String("select ten_option from tbl_option where ma_option='TUQ_VN'") + "\n" + MyFunction.RunSQL_String("select ten_option from tbl_option where ma_option='TUQ_EN'") + "\n" + MyFunction.RunSQL_String("select ten_option from tbl_option where ma_option='CV_VN_B'") + "\n" + MyFunction.RunSQL_String("select ten_option from tbl_option where ma_option='CV_EN_B'");
-           
-            
+
+            xrLabel38.Text = "- Vào tài khoản (Beneficiary):" + MyFunction.RunSQL_String("select noinopthue from q_dmdv where madv='" + _thuenn.searchMadonvi.EditValue + "'");
+            xrLabel38.Text += "\n- Mã số thuế(Tax Code):" + MyFunction.RunSQL_String("select mst from q_dmdv where madv='" + _thuenn.searchMadonvi.EditValue + "'");
+            xrLabel38.Text += "\n- Ngân hàng:" + MyFunction.RunSQL_String("select nganhangnopthue from q_dmdv where madv='" + _thuenn.searchMadonvi.EditValue + "'")+
+                "\n- Số tài khoản(Account number)"+ MyFunction.RunSQL_String("select sotaikhoannopthue from q_dmdv where madv='" + _thuenn.searchMadonvi.EditValue + "'");
+            xrLabel38.Text += "\n- Nội dung(Description):" + txt_tendv.Text + " - MST: " + txt_mst.Text + "- " + txtDiengiai.Text + " - Mã chương(Item no.): 557 - Tiểu mục(Subsection): " + txt_machuong.Text;
+            xrLabel38.Text += "\n- Lưu ý: Thời hạn chuyển nộp cơ quan thuế: chậm nhất trước ngày 20 tháng liền kề của tháng phát giấy báo(khai thuế tháng) hoặc trước ngày 30 tháng đầu quý sau(khai thuế quý)."
+                + "\n-Deadline for tax payment: no later than the 20th of the following month of this notification issuance(for monthly tax declaration) or no later than the 30th of the first month of the next quarter(for quarterly tax declaration).'";
+
         }
 
         private void Detail_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
@@ -44,6 +57,7 @@ namespace QuanlyThue.Report
             txt_mst.Text = MyFunction.RunSQL_String("select mst from q_hsc where manv='" + txt_manv.Text + "'");
             txt_machuong.Text=_thuenn.cmbMachuong.Text;
             txtNoinopThue.Text = MyFunction.RunSQL_String("select noinopthue from q_dmdv where madv='" + _thuenn.searchMadonvi.EditValue + "'");
+            
         }
 
         private void ReportHeader_BeforePrint(object sender, System.Drawing.Printing.PrintEventArgs e)
@@ -55,7 +69,8 @@ namespace QuanlyThue.Report
                 txt_thangQuy.Text = "Tháng (Month): " + _thuenn.cmbThang.Text + " Năm (Year): " + _thuenn.cmbNam.Text;
             else
                 txt_thangQuy.Text = "Quý (Quarter): " + _thuenn.cmbKythue.Text.Substring(4, 1) + " Năm (Year): " + _thuenn.cmbNam.Text;
-            
+           
+
         }
     }
 }

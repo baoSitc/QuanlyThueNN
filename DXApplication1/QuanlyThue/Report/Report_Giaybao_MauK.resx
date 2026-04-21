@@ -117,9 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="sqlDataSource1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="sqlDataSource1.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>17, 17</value>
-  </metadata>
+  </data>
   <data name="sqlDataSource1.ResultSchemaSerializable" xml:space="preserve">
     <value>PERhdGFTZXQgTmFtZT0ic3FsRGF0YVNvdXJjZTEiPjxWaWV3IE5hbWU9IlRfVEhVRU5OIj48RmllbGQgTmFtZT0iSWQiIFR5cGU9IkludDMyIiAvPjxGaWVsZCBOYW1lPSJMR1RIQU5HIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9Ik1BRFYiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iTUFOViIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJIT0RFTSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJURU4iIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iTENWX1VTRCIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJETENWIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IlBIVUNBUCIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJUSFVPTkciIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iS0hBQyIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJUSUVOTkhBIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IkxHVE5DTiIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJHVF9CQU5USEFOIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IkdUX1BIVVRIVU9DIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IlROQ04iIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iVFROIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9Ik5WQkhYSCIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJQRFYiIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iRE5WSEciIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iVE9OR1RJRU5fRE4iIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iU09IRCIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJOR0FZSEQiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iU09HTlQiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iRElFTkdJQUkiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iRElTQ1JJUFRJT04iIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iS1lUSFVFIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IlNPVElFTlZFIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9Ik5HQVlUSUVOVkUiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iUEhBTlRJQ0giIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iU09CSUVOTEFJIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9Ik5HQVlUQyIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJOR0FZQkwiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iTkdBWU5PUFRIVUUiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iVElFTl9WTiIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJUSFVBIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9IlhMVEhVQSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJUSElFVSIgVHlwZT0iRG91YmxlIiAvPjxGaWVsZCBOYW1lPSJYTFRISUVVIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkdISUNIVSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJOR1VPSVNEIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IlRHTEciIFR5cGU9IkRvdWJsZSIgLz48RmllbGQgTmFtZT0iVEdCSFhIIiBUeXBlPSJEb3VibGUiIC8+PEZpZWxkIE5hbWU9Ik5HQVlUQU8iIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iVElFTkNIVSIgVHlwZT0iU3RyaW5nIiAvPjwvVmlldz48L0RhdGFTZXQ+</value>
   </data>
@@ -130,12 +131,6 @@
 - Please be advised that it should be done in VND into account of FOSCO (VND) No. 007.100.473.5213 at Vietcombank Ho Chi Minh City - VN.'</value>
   </data>
   <data name="xrLabel38.ExpressionBindings" xml:space="preserve">
-    <value>'- Vào tài khoản (Beneficiary):'+ [ReportItems].[txtNoinopThue].[Text]+'
-- Mã số thuế (Tax Code): '+ [ReportItems].[txt_mst].[Text]+'
-- Ngân hàng: Vietcombank HCM
-- Số tài khoản (Account number): 7111.1056137
-- Nội dung (Description):'+[TEN]+' - MST:'+ [ReportItems].[txt_mst].[Text]+' - '+[ReportItems.txtDiengiai].[Text]+' - Mã chương (Item no.): 557 - Tiểu mục (Subsection): '+ [ReportItems].[txt_machuong].[Text]+' 
-- Lưu ý: Thời hạn chuyển nộp cơ quan thuế: chậm nhất trước ngày 20 tháng liền kề của tháng phát giấy báo (khai thuế tháng) hoặc trước ngày 30 tháng đầu quý sau (khai thuế quý).
-- Deadline for tax payment: no later than the 20th of the following month of this notification issuance (for monthly tax declaration) or no later than the 30th of the first month of the next quarter (for quarterly tax declaration).'</value>
+    <value />
   </data>
 </root>
