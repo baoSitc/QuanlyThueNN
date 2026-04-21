@@ -403,13 +403,12 @@ namespace QuanlyThue.Forms
     0 AS SUM_TONGBH,
     0 AS SUM_BHTN,
     0 AS SUM_CDP,
-    0 AS SUM_TONGTHUE,
-    0 AS SUM_THUENN,
-
+    0 AS SUM_TONGTHUE,    
     SUM(A.SUM_DVP) AS SUM_DVP,
-
+0 AS SUM_THUENN,
+'' AS MANN,'' AS LUONGNN,'' AS THUENN,'' AS DVPNN,
     SUM(CASE WHEN C.STTEMP > 0 THEN C.STTEMP ELSE 0 END) AS THUA,
-    '' as PHILOAIK,'' AS MANN,'' AS LUONGNN,'' AS THUENN,'' AS DVPNN,  
+      
 
     MAX(A.GHICHU) AS GHICHU
 
@@ -512,10 +511,10 @@ ORDER BY
             MyFunction.SetMoneyCol(view, "SUM_TONGTHUE", "TTN", 100);
             MyFunction.SetMoneyCol(view, "SUM_BHTN", "BHTN", 100);
             MyFunction.SetMoneyCol(view, "SUM_CDP", "CDP", 100);
-            MyFunction.SetMoneyCol(view, "THUA", "THUA", 100);
-            MyFunction.SetMoneyCol(view, "SUM_THUENN", "THUE NN/DV K/GPLD", 100);
+            MyFunction.SetMoneyCol(view, "THUA", "THUA", 100);            
             MyFunction.SetMoneyCol(view, "SUM_DVP", "PHI DV", 150);
-            MyFunction.SetCol(view, "PHILOAIK", "PHÍ LOẠI K", 100);
+            MyFunction.SetMoneyCol(view, "SUM_THUENN", "THUE NN/DV K/GPLD", 100);
+            
             MyFunction.SetCol(view, "MANN", "MÃ NN", 100);
             MyFunction.SetCol(view, "LUONGNN", "LƯƠNG NN", 100);
             MyFunction.SetCol(view, "THUENN", "THUẾ NN", 100);
@@ -867,11 +866,9 @@ ORDER BY
         -- 🔥 dùng đơn vị con nếu có
         --X.MADV_CON AS MADV,
         C.MADV,
-
         '' AS TenDV,
-
-        SUM(X.DNVHG) AS SUM_DNVHG,
-        SUM(X.DVP) AS SUM_DVP,
+        SUM(ISNULL(X.DNVHG,0)) AS SUM_DNVHG,
+        SUM(ISNULL(X.DVP,0)) AS SUM_DVP,
 
         SUM(CASE WHEN C.STTEMP > 0 THEN C.STTEMP ELSE 0 END) AS STTEMP,
 
@@ -887,7 +884,7 @@ ORDER BY
 
     FROM CTNH C
 
-    CROSS APPLY
+    OUTER APPLY
     (
         SELECT 
             H.SOHD,
@@ -986,7 +983,7 @@ GHICHU AS [Diễn giải],
 '13885P' AS [TK Có (*)],
 SUM_DVP ,
 SUM_DVP ,
-MADV ,
+LEFT(MADV,5) ,
 '' ,
 '' ,
 '' ,
@@ -1023,7 +1020,7 @@ N'THỪA CHƯA PHÂN TÍCH' AS [Diễn giải],   -- yêu cầu của bạn
 '33886' ,  -- bạn có thể đổi TK này nếu cần
 STTEMP ,
 STTEMP ,
-MADV ,
+LEFT(MADV,5) ,
 '' ,
 '' ,
 '' ,
