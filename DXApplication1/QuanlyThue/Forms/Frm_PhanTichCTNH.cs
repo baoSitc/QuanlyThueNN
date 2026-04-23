@@ -81,49 +81,67 @@ namespace QuanlyThue.Forms
                             using (SqlConnection conn = new SqlConnection(MyFunction.str_con))
                             {
                                 conn.Open();
-
+                                //Kiểm tra tồn tại của SOTHAMCHIEU trước khi insert để tránh lỗi khóa chính
                                 for (int i = 0; i < dt.Rows.Count; i++)
                                 {
                                     DataRow row = dt.Rows[i];
-                                    DateTime ngayGD;
-                                    var s = row["NGAYGIAODICH"]?.ToString();
+                                    string sothamchieu = row["SOTHAMCHIEU"]?.ToString();
+                                    if (!string.IsNullOrEmpty(sothamchieu))
+                                    {
+                                        using (SqlCommand checkCmd = new SqlCommand("SELECT COUNT(1) FROM CTNH WHERE ISNULL(SOTHAMCHIEU,'') = ISNULL(@SOTHAMCHIEU,'')", conn))
+                                        {
+                                            checkCmd.Parameters.AddWithValue("@SOTHAMCHIEU", sothamchieu);
+                                            int count = (int)checkCmd.ExecuteScalar();
+                                            if (count > 0)
+                                            {
+                                                MessageBox.Show($"Dòng {i + 2}: Số tham chiếu '{sothamchieu}' đã tồn tại. Bạn cần kiểm tra file Excel và Import lại!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }                                  
 
+                                        for (int j = 0; j < dt.Rows.Count; j++)
+                                        {
+                                            DataRow row2 = dt.Rows[j];
+                                            DateTime ngayGD;
+                                            var s = row2["NGAYGIAODICH"]?.ToString();
 
-
-
-                                    using (SqlCommand cmd = new SqlCommand(@"
+                                            using (SqlCommand cmd = new SqlCommand(@"
             INSERT INTO CTNH
             (NGAYGIAODICH,SOTHAMCHIEU,SOTIENCO,MOTA,STTEMP,KHONGXOA)
             SELECT
             @NGAYGIAODICH, @SOTHAMCHIEU, @SOTIENCO, @MOTA,@SOTIENCO,@KHONGXOA
         WHERE NOT EXISTS (
         SELECT 1 FROM CTNH WHERE ISNULL(SOTHAMCHIEU,'') = ISNULL(@SOTHAMCHIEU,''))", conn))
-                                    {
-                                        if (row["NGAYGIAODICH"] != DBNull.Value)
-                                        {
-                                            cmd.Parameters.Add("@NGAYGIAODICH", SqlDbType.DateTime)
-                                               .Value = Convert.ToDateTime(row["NGAYGIAODICH"]);
+                                            {
+                                                if (row2["NGAYGIAODICH"] != DBNull.Value)
+                                                {
+                                                    cmd.Parameters.Add("@NGAYGIAODICH", SqlDbType.DateTime)
+                                                       .Value = Convert.ToDateTime(row2["NGAYGIAODICH"]);
+                                                }
+                                                else
+                                                {
+                                                    cmd.Parameters.Add("@NGAYGIAODICH", SqlDbType.DateTime).Value = DBNull.Value;
+                                                }
+
+
+                                                //cmd.Parameters.AddWithValue("@NGAYGIAODICH", row["NGAYGIAODICH"]?.ToString());
+                                                cmd.Parameters.AddWithValue("@SOTHAMCHIEU", row2["SOTHAMCHIEU"]?.ToString());
+                                                cmd.Parameters.AddWithValue("@SOTIENCO", row2["SOTIENCO"]?.ToString());
+                                                cmd.Parameters.AddWithValue("@MOTA", row2["MOTA"]?.ToString());
+                                                cmd.Parameters.AddWithValue("@KHONGXOA", 0);
+
+                                                cmd.ExecuteNonQuery();
+
+                                            }
                                         }
-                                        else
-                                        {
-                                            cmd.Parameters.Add("@NGAYGIAODICH", SqlDbType.DateTime).Value = DBNull.Value;
-                                        }
-
-
-                                        //cmd.Parameters.AddWithValue("@NGAYGIAODICH", row["NGAYGIAODICH"]?.ToString());
-                                        cmd.Parameters.AddWithValue("@SOTHAMCHIEU", row["SOTHAMCHIEU"]?.ToString());
-                                        cmd.Parameters.AddWithValue("@SOTIENCO", row["SOTIENCO"]?.ToString());
-                                        cmd.Parameters.AddWithValue("@MOTA", row["MOTA"]?.ToString());
-                                        cmd.Parameters.AddWithValue("@KHONGXOA", 0);                                      
-
-                                        cmd.ExecuteNonQuery();
-
-                                    }
-                                }
+                                    
+                                    MessageBox.Show("Import dữ liệu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    //load dữ liệu lên gridview
+                                    gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
+                                
                             }
-                            MessageBox.Show("Import dữ liệu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            //load dữ liệu lên gridview
-                            gridCTNH.DataSource = MyFunction.GetDataTable("select * from CTNH");
 
                         }
                     }

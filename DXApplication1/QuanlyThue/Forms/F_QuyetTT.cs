@@ -70,8 +70,19 @@ namespace QuanlyThue.Forms
 
         private void searchHotenNV_EditValueChanged(object sender, EventArgs e)
         {
-            gridData.DataSource = MyFunction.GetDataTable("select LG_THANG,DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, LCB, TIENPC, PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH,LGBHTN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, SOPT, SOHD from q_luong where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' and manv='" + searchHotenNV.EditValue + "' order by lg_thang");
-            gridQTT.DataSource = MyFunction.GetDataTable("Select '" + cmbDennam.Text + "' AS NAM,'" + searchMADV.EditValue + "' AS DV,(CASE WHEN SUM(TC_NV)>0 THEN '' ELSE '1' END) as [10%],'' as QT, hodem AS HO,TEN,count(distinct lg_thang) as SOTHANG,SUM(LGTNCN)-sum(pc_tthue) as LUONG,sum(pc_tthue) as PHUCAP,SUM(NVBHXH) as BHXH_NV, SUM(NVBHYT) AS BHYT_NV, SUM(NVBHTN) AS BHTN_NV, sum(sopt) as SO_PHUTHUOC,sum(sopt)*'" + GTPT + "' + (count(distinct lg_thang)*'" + GTBT + "') as TONGGIAM ,SUM(TNCN) AS TNTT, sum(TTN) as THUE, '" + MyFunction.RunSQL_String("select TOP 1 MST FROM Q_DMDV WHERE MADV='" + searchMADV.EditValue + "'") + "' AS MSTVP,'' as MSCN, MSTNV,SCMT, MANV from q_luong where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' and manv='" + searchHotenNV.EditValue + "' group by manv,hodem,ten, MSTNV,SCMT");
+            gridData.DataSource = MyFunction.GetDataTable("select LG_THANG,DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, LCB, TIENPC, PC_TBH, PC_TTHUE, TONGLUONG," +
+                " LGTNCN, LGBHXH,LGBHTN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, SOPT, SOHD from q_luong" +
+                " where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' and manv='" + searchHotenNV.EditValue + "' order by lg_thang");
+
+            gridQTT.DataSource = MyFunction.GetDataTable("Select '" + cmbDennam.Text + "' AS NAM,'" + searchMADV.EditValue + "' AS DV," +
+                   "(CASE WHEN SUM(TC_NV)>0 THEN '' ELSE '1' END) as [10%],'' as QT, NhanSu.HoLotNhanSu AS HO,NhanSu.TenNhanSu AS TEN,count(distinct lg_thang) as SOTHANG," +
+                   "SUM(LGTNCN)-sum(pc_tthue) as LUONG,sum(pc_tthue) as PHUCAP,SUM(NVBHXH) as BHXH_NV, SUM(NVBHYT) AS BHYT_NV, SUM(NVBHTN) AS BHTN_NV," +
+                   " sum(sopt) as SO_PHUTHUOC,sum(Giam_TBT)+sum(ST_NGPT) as TONGGIAM ," +
+                   "SUM(TNCN) AS TNTT, sum(TTN) as THUE, '" + MyFunction.RunSQL_String("select TOP 1 MST FROM Q_DMDV" +
+                   " WHERE MADV='" + searchMADV.EditValue + "'") + "' AS MSTVP,'' as MSCN, MSTNV,SCMT, MANV  from q_luong,NhanSu " +
+                   "where Q_LUONG.DV=NhanSu.MaDonVi and Q_LUONG.MANV=NhanSu.MaNhanSu" +
+                   " AND dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' and manv='" + searchHotenNV.EditValue + "'" +
+                   " group by manv,NhanSu.HoLotNhanSu ,NhanSu.TenNhanSu, MSTNV,SCMT");
 
 
         }
@@ -231,7 +242,8 @@ namespace QuanlyThue.Forms
             int I;
             GTBT = 11000000;GTPT = 4400000;
             String thangs, nams, LGTHANG, str, STR1, STR2;
-            if (double.Parse(cmbDennam.Text + cmbDenthang.Text) < double.Parse(cmbTuNam.Text + cmbTuThang.Text) || DateTime.Parse("01/" + cmbDenthang.Text + "/" + cmbDennam.Text) > DateTime.Now.Date || DateTime.Parse("01/" + cmbTuThang.Text + "/" + cmbTuNam.Text) > DateTime.Now.Date)
+            if (double.Parse(cmbDennam.Text + cmbDenthang.Text) < double.Parse(cmbTuNam.Text + cmbTuThang.Text) ||
+                DateTime.Parse("01/" + cmbDenthang.Text + "/" + cmbDennam.Text) > DateTime.Now.Date || DateTime.Parse("01/" + cmbTuThang.Text + "/" + cmbTuNam.Text) > DateTime.Now.Date)
             {
                 MessageBox.Show("Bạn chon sai tháng, vui lòng chọn lại!!!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -263,8 +275,18 @@ namespace QuanlyThue.Forms
                     MyFunction.RunSQL("update " + str + " set loainv=null where loainv=''");
                     MyFunction.RunSQL("update " + str + " set L_HDLD=null where L_HDLD=''");
                     //MyFunction.RunSQL("INSERT INTO Q_LUONG(LG_THANG, DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT, SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD, TGLG, TGBHXH, LGBHTN, TONGTIEN_DN,NGUOISD,GHICHU) SELECT LG_THANG, DV, MANV, HODEM, TEN,  L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT, SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD , TGLG, TGBHXH, LGBHTN, TONGTIEN_DN,'" + MyFunction._UserName + "',GHICHU FROM " + str + " where dv = '" + searchMADV.EditValue + "' and LOAINV is null AND LOAILG<>'S'");
-                    MyFunction.RunSQL("INSERT INTO Q_LUONG(LG_THANG, DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT, SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD, TGLG, TGBHXH, LGBHTN, TONGTIEN_DN,NGUOISD,GHICHU) SELECT LG_THANG, DV, MANV, HODEM, TEN,  L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT, SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD , TGLG, TGBHXH, LGBHTN, TONGTIEN_DN,'" + MyFunction._UserName + "',GHICHU FROM " + str + " where dv = '" + searchMADV.EditValue + "' AND LOAILG<>'S'");
-                    MyFunction.RunSQL("UPDATE Q_LUONG SET Q_LUONG.MSTNV = Q_HSC.MST, Q_LUONG.SCMT = Q_HSC.SOCMND FROM Q_LUONG JOIN Q_HSC ON Q_LUONG.MANV = Q_HSC.MANV AND Q_LUONG.DV ='" + searchMADV.EditValue + "' AND Q_LUONG.NGUOISD='" + MyFunction._UserName + "'");
+                    MyFunction.RunSQL("INSERT INTO Q_LUONG(LG_THANG, DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT," +
+                        " SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH," +
+                        " PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV," +
+                        " Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD, TGLG, TGBHXH, LGBHTN, TONGTIEN_DN,NGUOISD,GHICHU)" +
+                        " SELECT LG_THANG, DV, MANV, HODEM, TEN,  L_HDLD, LOAILG, LCV, DLCV, LTLD, DVT," +
+                        " SOPT, DVP, CD, LCB, TIENPC, DVTPC, AN, DT, CT, TP, KHAC, PC_TIENNHA, PC_TTKHNHA, HD_NHA, THUE_NHA,PC_TBH," +
+                        " PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, DV_BHXH, DV_BHYT, DV_BHTN, TC_DN, NVBHXH, NVBHYT, NVBHTN, TC_NV," +
+                        " Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG, PHI_CD, TIEN_DVP,SOHD , TGLG, TGBHXH, LGBHTN, TONGTIEN_DN," +
+                        "'" + MyFunction._UserName + "',GHICHU FROM " + str + " where dv = '" + searchMADV.EditValue + "' AND LOAILG<>'S'");
+
+                    MyFunction.RunSQL("UPDATE Q_LUONG SET Q_LUONG.MSTNV = Q_HSC.MST, Q_LUONG.SCMT = Q_HSC.SOCMND FROM Q_LUONG " +
+                        "JOIN Q_HSC ON Q_LUONG.MANV = Q_HSC.MANV AND Q_LUONG.DV ='" + searchMADV.EditValue + "' AND Q_LUONG.NGUOISD='" + MyFunction._UserName + "'");
 
                     I = I - 1;
                     STR1 = thangs + nams;
@@ -287,8 +309,18 @@ namespace QuanlyThue.Forms
                 str = cmbDennam.Text + cmbDenthang.Text;
                 //MyFunction.RunSQL("delete from q_luong where dv='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' and convert(float,right(lg_thang,4)+left(LG_THANG,2))>'" + cmbDennam.Text + cmbDenthang.Text + "'");
                 MessageBox.Show("Đã tổng hợp xong dữ liệu","Thông báo",MessageBoxButtons.OK,MessageBoxIcon.Information);
-                gridData.DataSource=MyFunction.GetDataTable("select LG_THANG,DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, LCB, TIENPC, PC_TBH, PC_TTHUE, TONGLUONG, LGTNCN, LGBHXH, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG,SOPT, SOHD  from q_luong where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' order by lg_thang");
-                gridQTT.DataSource=MyFunction.GetDataTable("Select '" + cmbDennam.Text + "' AS NAM,'" + searchMADV.EditValue + "' AS DV,(CASE WHEN SUM(TC_NV)>0 THEN '' ELSE '1' END) as [10%],'' as QT, hodem AS HO,TEN,count(distinct lg_thang) as SOTHANG,SUM(LGTNCN)-sum(pc_tthue) as LUONG,sum(pc_tthue) as PHUCAP,SUM(NVBHXH) as BHXH_NV, SUM(NVBHYT) AS BHYT_NV, SUM(NVBHTN) AS BHTN_NV, sum(sopt) as SO_PHUTHUOC,sum(sopt)*'" + GTPT + "' + (count(distinct lg_thang)*'" + GTBT + "') as TONGGIAM ,SUM(TNCN) AS TNTT, sum(TTN) as THUE, '" + MyFunction.RunSQL_String("select TOP 1 MST FROM Q_DMDV WHERE MADV='" + searchMADV.EditValue + "'") + "' AS MSTVP,'' as MSCN, MSTNV,SCMT, MANV from q_luong where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' group by manv,hodem,ten, MSTNV,SCMT");
+                gridData.DataSource=MyFunction.GetDataTable("select LG_THANG,DV, MANV, HODEM, TEN, L_HDLD, LOAILG, LCV, DLCV, LTLD, LCB, TIENPC, PC_TBH, PC_TTHUE, TONGLUONG," +
+                    " LGTNCN, LGBHXH, NVBHXH, NVBHYT, NVBHTN, TC_NV, Giam_TBT, ST_NGPT, TNCN, TTN, DNVHG,SOPT, SOHD" +
+                    "  from q_luong where dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' order by lg_thang");
+
+                gridQTT.DataSource=MyFunction.GetDataTable("Select '" + cmbDennam.Text + "' AS NAM,'" + searchMADV.EditValue + "' AS DV," +
+                    "(CASE WHEN SUM(TC_NV)>0 THEN '' ELSE '1' END) as [10%],'' as QT, NhanSu.HoLotNhanSu AS HO,NhanSu.TenNhanSu AS TEN,count(distinct lg_thang) as SOTHANG," +
+                    "SUM(LGTNCN)-sum(pc_tthue) as LUONG,sum(pc_tthue) as PHUCAP,SUM(NVBHXH) as BHXH_NV, SUM(NVBHYT) AS BHYT_NV, SUM(NVBHTN) AS BHTN_NV," +
+                    " sum(sopt) as SO_PHUTHUOC,sum(Giam_TBT)+sum(ST_NGPT) as TONGGIAM ," +
+                    "SUM(TNCN) AS TNTT, sum(TTN) as THUE, '" + MyFunction.RunSQL_String("select TOP 1 MST FROM Q_DMDV" +
+                    " WHERE MADV='" + searchMADV.EditValue + "'") + "' AS MSTVP,'' as MSCN, MSTNV,SCMT, MANV  from q_luong,NhanSu " +
+                    "where Q_LUONG.DV=NhanSu.MaDonVi and Q_LUONG.MANV=NhanSu.MaNhanSu" +
+                    " AND dv ='" + searchMADV.EditValue + "' and nguoisd='" + MyFunction._UserName + "' group by manv,NhanSu.HoLotNhanSu ,NhanSu.TenNhanSu, MSTNV,SCMT");
 
                 //showtreview(cmb_madv.Text);
             }
